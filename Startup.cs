@@ -9,6 +9,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using My_company.Services;
+using My_company.Domain.Repositories.Abstract;
+using My_company.Domain.Repositories;
+using Microsoft.AspNetCore.Identity;
+using My_company.Domain;
+using Microsoft.EntityFrameworkCore;
 
 namespace My_company
 {
@@ -25,6 +30,28 @@ namespace My_company
         public void ConfigureServices(IServiceCollection services)
         {
             Configuration.Bind("Project", new Config());
+            services.AddTransient<IServiceItemsRepository, ServiceItemsRepository>();
+            services.AddTransient<ITextFieldsRepository, TextFieldsRepository>();
+            services.AddDbContext<AppDbContext>(options => options.UseSqlServer(Config.ConnectionString));
+
+            services.AddIdentity<IdentityUser, IdentityRole>(opt =>
+            {
+                opt.Password.RequireDigit = false;
+                opt.Password.RequireUppercase = false;
+                opt.Password.RequireLowercase = false;
+                opt.Password.RequireNonAlphanumeric = false;
+                opt.Password.RequiredLength = 5;
+                opt.User.RequireUniqueEmail = true;
+                
+            }).AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
+
+            services.ConfigureApplicationCookie(opt =>
+            {
+                opt.Cookie.Name = "My Company";
+                opt.Cookie.HttpOnly = true;
+                opt.LoginPath = "/account/login";
+                opt.AccessDeniedPath = "/account/accessdenied";
+            });
             services.AddControllersWithViews()
                  .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0)
                 .AddSessionStateTempDataProvider();
@@ -40,6 +67,10 @@ namespace My_company
             }
 
             app.UseRouting();
+
+            app.UseCookiePolicy();
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseStaticFiles();
 
