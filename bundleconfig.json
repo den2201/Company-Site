@@ -1,0 +1,11 @@
+[
+  {
+    "outputFileName": "wwwroot/js/bundle.js",
+    "inputFiles": [
+      "wwwroot/js/browser.min.js",
+      "wwwroot/js/jquery.min.js",
+      "wwwroot/js/main.js"
+    ]
+  }
+]
+
